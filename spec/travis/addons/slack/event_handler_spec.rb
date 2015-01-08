@@ -59,6 +59,13 @@ describe Travis::Addons::Slack::EventHandler do
       notify
     end
 
+    it 'does not trigger when pull request notifications are disabled' do
+      build.stubs(config: { notifications: { slack: { on_pull_requests: false } } })
+      build.stubs(:pull_request?).returns(true)
+      task.expects(:run).never
+      notify
+    end
+
     it 'triggers a task if rooms are present' do
       build.stubs(:config => { :notifications => { :slack => 'room' } })
       task.expects(:run).with(:slack, payload, targets: ['room'])

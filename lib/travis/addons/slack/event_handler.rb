@@ -12,11 +12,17 @@ module Travis
         EVENTS = /build:finished/
 
         def handle?
-          targets.present? && config.send_on_finished_for?(:slack)
+          enabled? && targets.present? && config.send_on_finished_for?(:slack)
         end
 
         def handle
           Travis::Addons::Slack::Task.run(:slack, payload, targets: targets)
+        end
+
+        def enabled?
+          enabled = config.notification_values(:slack, :on_pull_requests)
+          enabled = true if enabled.nil?
+          pull_request? ? enabled : true
         end
 
         def targets
